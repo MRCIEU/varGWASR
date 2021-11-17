@@ -5,7 +5,7 @@
 #' @param y Name of outcome
 #' @param covar1 Optional vector of covariates to include in the first-stage model
 #' @param covar2 Optional vector of covariates to include in the second-stage model
-#' @return res Vector of results: var(Y|G==0), var(Y|G==1), var(Y|G==2) and test P-value
+#' @return Vector of results: var(Y|G==0), var(Y|G==1), var(Y|G==2) and test P-value
 #' @export
 model <- function(data, x, y, covar1=NULL, covar2=NULL){
     if (any(is.na(data))) stop("Dataframe contains NA values")
@@ -69,7 +69,7 @@ model <- function(data, x, y, covar1=NULL, covar2=NULL){
 #' @param y Name of outcome
 #' @param covar1 Optional vector of covariates to include in the first-stage model
 #' @param covar2 Optional vector of covariates to include in the second-stage model
-#' @return result Vector of betas
+#' @return Vector of betas
 #' @export
 model_bs <- function(data, indices, x, y, covar1=NULL, covar2=NULL){
     d <- data[indices,] # allows boot to select sample
