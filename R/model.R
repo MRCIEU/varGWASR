@@ -47,9 +47,9 @@ model <- function(data, x, y, covar1=NULL, covar2=NULL){
         p <- anova(fit_null, fit2) %>% broom::tidy(.) %>% dplyr::pull(p.value) %>% dplyr::nth(2)
     }
     # extract coef
-    b0 <- fit2 %>% broom::tidy(.) %>% dplyr::filter(term == "(Intercept)") %>% dplyr::pull("estimate")
-    b1 <- fit2 %>% broom::tidy(.) %>% dplyr::filter(term == "x1") %>% dplyr::pull("estimate")
-    b2 <- fit2 %>% broom::tidy(.) %>% dplyr::filter(term == "x2") %>% dplyr::pull("estimate")
+    b0 <- fit2 %>% broom::tidy(.) %>% dplyr::pull("estimate") %>% dplyr::nth(1)
+    b1 <- fit2 %>% broom::tidy(.) %>% dplyr::pull("estimate") %>% dplyr::nth(2)
+    b2 <- fit2 %>% broom::tidy(.) %>% dplyr::pull("estimate") %>% dplyr::nth(3)
     res <- c(
         b0^2/(2/pi), # var(Y|G==0)
         b0^2/(2/pi) + (2*b0*b1+b1^2)/(2/pi), # var(Y|G==1)
