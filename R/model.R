@@ -61,7 +61,7 @@ model <- function(data, x, y, covar1=NULL, covar2=NULL){
 
 #' Bootstrap function to obtain SE for LAD-BF effects
 #'
-#' Usage result <- boot::boot(data=data, statistic=varGWASR::model_bs, R=500, x="SNP", y="outcome", covar1=c("c1", "c2"), covar2=c("c3", "c4")) %>% broom::tidy
+#' Usage result <- boot::boot(data=data, statistic=varGWASR::model_bs, R=500, x="SNP", y="outcome", covar1=c("c1", "c2"), covar2=c("c3", "c4")) %>% broom::tidy(.)
 #'
 #' @param data Dataframe of observations
 #' @param indices Vector of nrow indices for bootstrapping SEs
