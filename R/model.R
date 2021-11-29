@@ -61,26 +61,6 @@ model <- function(data, x, y, covar1=NULL, covar2=NULL){
         phi_f=f,
         phi_p=p
     )
-
-<<<<<<< HEAD
+    
     return(res)
 }
-=======
-#' Bootstrap function to obtain SE for LAD-BF effects
-#'
-#' Usage result <- boot::boot(data=data, statistic=varGWASR::model_bs, R=500, x="SNP", y="outcome", covar1=c("c1", "c2"), covar2=c("c3", "c4")) %>% broom::tidy(.)
-#'
-#' @param data Dataframe of observations
-#' @param indices Vector of nrow indices for bootstrapping SEs
-#' @param x Name of SNP dosage
-#' @param y Name of outcome
-#' @param covar1 Optional vector of covariates to include in the first-stage model
-#' @param covar2 Optional vector of covariates to include in the second-stage model
-#' @return Vector of betas
-#' @export
-model_bs <- function(data, indices, x, y, covar1=NULL, covar2=NULL){
-    d <- data[indices,] # allows boot to select sample
-    result <- varGWASR::model(d, x, y, covar1=covar1, covar2=covar2)[1:3]
-    return(result)
-}
->>>>>>> 692ada0c8f8842137670c534debbd319384c7bb8
