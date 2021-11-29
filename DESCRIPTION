@@ -14,4 +14,5 @@ Imports:
     cqrReg,
     boot,
     dplyr,
-    broom
+    broom,
+    car

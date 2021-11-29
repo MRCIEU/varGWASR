@@ -18,7 +18,7 @@ model(data, x, y, covar1 = NULL, covar2 = NULL)
 \item{covar2}{Optional vector of covariates to include in the second-stage model}
 }
 \value{
-res Vector of results: var(Y|G==0), var(Y|G==1), var(Y|G==2) and test P-value
+Dataframe containing variance effect for SNP=1 (phi_x1) and SNP=2 (phi_x2) with SE and p and F-stat
 }
 \description{
 Test for effect of SNP on outcome variance using the LAD-BF model

@@ -5,7 +5,7 @@
 #' @param y Name of outcome
 #' @param covar1 Optional vector of covariates to include in the first-stage model
 #' @param covar2 Optional vector of covariates to include in the second-stage model
-#' @return Vector of results: var(Y|G==0), var(Y|G==1), var(Y|G==2) and test P-value
+#' @return Dataframe containing variance effect for SNP=1 (phi_x1) and SNP=2 (phi_x2) with SE and p and F-stat
 #' @export
 model <- function(data, x, y, covar1=NULL, covar2=NULL){
     if (any(is.na(data))) stop("Dataframe contains NA values")
@@ -40,39 +40,27 @@ model <- function(data, x, y, covar1=NULL, covar2=NULL){
         X <- data %>% dplyr::select(!!covar2)
         fit_null <- lm(d ~ ., data=X)
         p <- anova(fit_null, fit2) %>% broom::tidy(.) %>% dplyr::pull(p.value) %>% dplyr::nth(2)
+        f <- anova(fit_null, fit2) %>% broom::tidy(.) %>% dplyr::pull(statistic) %>% dplyr::nth(2)
     } else {
         X <- data %>% dplyr::select(!!x)
         fit2 <- lm(d ~ ., data=X)
         fit_null <- lm(d ~ 1, data=data)
         p <- anova(fit_null, fit2) %>% broom::tidy(.) %>% dplyr::pull(p.value) %>% dplyr::nth(2)
+        f <- anova(fit_null, fit2) %>% broom::tidy(.) %>% dplyr::pull(statistic) %>% dplyr::nth(2)
     }
-    # extract coef
-    b0 <- fit2 %>% broom::tidy(.) %>% dplyr::pull("estimate") %>% dplyr::nth(1)
-    b1 <- fit2 %>% broom::tidy(.) %>% dplyr::pull("estimate") %>% dplyr::nth(2)
-    b2 <- fit2 %>% broom::tidy(.) %>% dplyr::pull("estimate") %>% dplyr::nth(3)
-    res <- c(
-        b0^2/(2/pi), # var(Y|G==0)
-        b0^2/(2/pi) + (2*b0*b1+b1^2)/(2/pi), # var(Y|G==1)
-        b0^2/(2/pi) + (2*b0*b2+b2^2)/(2/pi), # var(Y|G==2)
-        p # P-value
-    )
-    return(res)
-}
 
-#' Bootstrap function to obtain SE for LAD-BF effects
-#'
-#' Usage result <- boot::boot(data=data, statistic=varGWASR::model_bs, R=500, x="SNP", y="outcome", covar1=c("c1", "c2"), covar2=c("c3", "c4")) %>% broom::tidy
-#'
-#' @param data Dataframe of observations
-#' @param indices Vector of nrow indices for bootstrapping SEs
-#' @param x Name of SNP dosage
-#' @param y Name of outcome
-#' @param covar1 Optional vector of covariates to include in the first-stage model
-#' @param covar2 Optional vector of covariates to include in the second-stage model
-#' @return Vector of betas
-#' @export
-model_bs <- function(data, indices, x, y, covar1=NULL, covar2=NULL){
-    d <- data[indices,] # allows boot to select sample
-    result <- varGWASR::model(d, x, y, covar1=covar1, covar2=covar2)[1:3]
-    return(result)
+    # deltamethod
+    v1 <- car::deltaMethod(fit2, "(2*b0*b1+b1^2)/(2/pi)", parameterNames=c("b0", "b1", "b2"))
+    v2 <- car::deltaMethod(fit2, "(2*b0*b2+b2^2)/(2/pi)", parameterNames=c("b0", "b1", "b2"))
+
+    res <- data.frame(
+        phi_x1=v1$Estimate,
+        se_x1=v1$SE,
+        phi_x2=v2$Estimate,
+        se_x2=v2$SE,
+        phi_f=f,
+        phi_p=p
+    )
+
+    return(res)
 }
