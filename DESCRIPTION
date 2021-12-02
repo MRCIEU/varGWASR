@@ -15,4 +15,9 @@ Imports:
     boot,
     dplyr,
     broom,
-    car
+    car,
+    sandwich
+Suggests: 
+    rmarkdown,
+    knitr
+VignetteBuilder: knitr
