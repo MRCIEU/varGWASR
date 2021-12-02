@@ -12,7 +12,7 @@ remotes::install_github("mrcieu/varGWASR")
 
 ## Vignette
 
-See [Simulation](vignettes/Simulation.html)
+See example [Simulation](vignettes/Simulation.html)
 
 ## Citation
 
