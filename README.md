@@ -10,9 +10,9 @@ if(!require("remotes"))
 remotes::install_github("mrcieu/varGWASR")
 ```
 
-## Vignette
+## Example
 
-See example [Simulation](vignettes/Simulation.html)
+See example [Simulation](inst/doc/Simulation.html)
 
 ## Citation
 
