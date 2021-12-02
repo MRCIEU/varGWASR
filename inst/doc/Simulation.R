@@ -1,0 +1,141 @@
+## ---- include = FALSE---------------------------------------------------------
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+
+## -----------------------------------------------------------------------------
+library("varGWASR")
+library("broom")
+library("dplyr")
+library("ggplot2")
+set.seed(1234)
+
+n_obs <- 1000
+n_sim <- 1000
+maf <- 0.4
+
+# main effect size of x on y detectable ~ 95% power
+delta <- 0.17
+
+# simulation
+results <- data.frame()
+for (phi in seq(0, 4, .5)){
+  
+  # size of interaction relative to main effect (Brookes S, et al 2004)
+  theta <- delta * phi
+  
+  for (i in 1:n_sim) {
+      # simulate GxE interaction effect
+      x <- rbinom(n_obs, 2, maf)
+      u <- rnorm(n_obs)
+      y <- x * delta + x*u * theta + rnorm(n_obs)
+
+      # test/estimate variance effect
+      fit <- varGWASR::model(data.frame(x, y), "x", "y")
+
+      # add true variance difference
+      fit$v1 <- var(y[x==1]) - var(y[x==0])
+      fit$v2 <- var(y[x==2]) - var(y[x==0])
+    
+      # store result
+      fit$phi <- phi
+      results <- rbind(results, fit)
+  }
+
+}
+
+## -----------------------------------------------------------------------------
+tbl <- results %>% 
+  dplyr::group_by(phi) %>%
+  dplyr::summarize(tidy(binom.test(sum(phi_p < 0.05), n_sim))) %>%
+  dplyr::select(phi, estimate, conf.low, conf.high) %>%
+  dplyr::rename(power="estimate", ci_95l="conf.low", ci_95h="conf.high")
+knitr::kable(tbl, digits=3)
+
+## -----------------------------------------------------------------------------
+# estimate mean and 95% CI
+v1 <- results %>%
+    dplyr::group_by(phi) %>%
+    dplyr::summarize(t.test(phi_x1) %>% tidy) %>%
+    dplyr::select(phi, estimate, conf.low, conf.high) %>%
+    dplyr::mutate(genotype="SNP=1", method="LAD-BF")
+v2 <- results %>%
+    dplyr::group_by(phi) %>%
+    dplyr::summarize(t.test(phi_x2) %>% tidy) %>%
+    dplyr::select(phi, estimate, conf.low, conf.high) %>%
+    dplyr::mutate(genotype="SNP=2", method="LAD-BF")
+v1_mean <- results %>%
+    dplyr::group_by(phi) %>%
+    dplyr::summarize(x=mean(v1))
+v2_mean <- results %>%
+    dplyr::group_by(phi) %>%
+    dplyr::summarize(x=mean(v2))
+v1 <- merge(v1, v1_mean, "phi")
+v1$wd <- 0.01
+v2 <- merge(v2, v2_mean, "phi")
+v2$wd <- 0.05
+ci <- rbind(v1, v2)
+ci$phi <- as.factor(ci$phi)
+ci$genotype <- as.factor(ci$genotype)
+
+## ---- fig.width=7,fig.height=7------------------------------------------------
+ggplot(data=ci, aes(x=x, y=estimate, ymin=conf.low, ymax=conf.high)) +
+    geom_point() + 
+    geom_abline(intercept = 0, slope = 1, linetype="dashed", color="grey") +
+    geom_errorbar(aes(width=wd)) +
+    theme_classic() +
+    xlab("Difference in variance compared with SNP=0") +
+    ylab("Estimated difference in variance compared with SNP=0 (95% CI)") +
+    facet_wrap(method ~ genotype, scales="free") +
+    scale_y_continuous(breaks = scales::pretty_breaks(n = 5)) +
+    theme(
+        strip.background = element_blank(),
+        legend.title.align=0.5
+    )
+
+## -----------------------------------------------------------------------------
+results <- merge(results, v1_mean, "phi")
+results <- merge(results, v2_mean, "phi")
+names(results)[10] <- "v1_mean"
+names(results)[11] <- "v2_mean"
+results$phi_x1_lci <- results$phi_x1 - (1.96 * results$se_x1)
+results$phi_x1_uci <- results$phi_x1 + (1.96 * results$se_x1)
+results$phi_x2_lci <- results$phi_x2 - (1.96 * results$se_x2)
+results$phi_x2_uci <- results$phi_x2 + (1.96 * results$se_x2)
+
+coverage1 <- results %>% 
+    dplyr::group_by(phi) %>%
+    dplyr::summarize(binom.test(sum(phi_x1_lci <= v1_mean & phi_x1_uci >= v1_mean), n()) %>% tidy) %>%
+    dplyr::select(phi, estimate, conf.low, conf.high) %>%
+    dplyr::mutate(genotype="SNP=1", method="LAD-BF")
+coverage2 <- results %>% 
+    dplyr::group_by(phi) %>%
+    dplyr::summarize(binom.test(sum(phi_x2_lci <= v2_mean & phi_x2_uci >= v2_mean), n()) %>% tidy) %>%
+    dplyr::select(phi, estimate, conf.low, conf.high) %>%
+    dplyr::mutate(genotype="SNP=2", method="LAD-BF")
+
+coverage1 <- merge(coverage1, v1_mean, "phi")
+coverage1$wd <- 0.01
+coverage2 <- merge(coverage2, v2_mean, "phi")
+coverage2$wd <- 0.05
+coverage <- rbind(coverage1, coverage2)
+coverage$phi <- as.factor(coverage$phi)
+coverage$genotype <- as.factor(coverage$genotype)
+
+## ---- fig.width=7,fig.height=7------------------------------------------------
+ggplot(data=coverage, aes(x=x, y=estimate, ymin=conf.low, ymax=conf.high)) +
+    geom_point() + 
+    geom_errorbar(aes(width=wd)) +
+    theme_classic() +
+    xlab("Difference in variance compared with SNP=0") +
+    ylab("Coverage of 95% CI (95% CI)") +
+    geom_hline(yintercept = 0.95, linetype = "dashed", color = "grey") +
+    facet_grid(method ~ genotype, scales="free_x") +
+    labs(shape="Genotype") +
+    scale_y_continuous(limits = c(0, 1), breaks = scales::pretty_breaks(n = 5)) +
+    theme(
+        strip.background = element_blank(),
+        legend.title.align=0.5
+    )
+

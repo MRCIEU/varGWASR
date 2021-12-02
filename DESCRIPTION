@@ -9,15 +9,10 @@ License: use_gpl3_license()
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2
-Imports:
-	data.table,
-    cqrReg,
-    boot,
-    dplyr,
-    broom,
-    car,
-    sandwich
-Suggests: 
-    rmarkdown,
-    knitr
+Imports: data.table, cqrReg, boot, dplyr, broom, car, sandwich
+Suggests: rmarkdown, knitr
 VignetteBuilder: knitr
+NeedsCompilation: no
+Packaged: 2021-12-02 10:55:17 UTC; ml18692
+Author: Matthew Lyon [aut, cre] (<https://orcid.org/0000-0002-2500-1013>)
+Maintainer: Matthew Lyon <matt.lyon@bristol.ac.uk>
