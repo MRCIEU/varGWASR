@@ -12,7 +12,7 @@ remotes::install_github("mrcieu/varGWASR")
 
 ## Example
 
-See example [Simulation](inst/doc/Simulation.html)
+Example is available from https://mrcieu.github.io/varGWASR/inst/doc/Simulation.html
 
 ## Citation
 
