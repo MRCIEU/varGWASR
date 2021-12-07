@@ -16,3 +16,6 @@ Example is available from https://mrcieu.github.io/varGWASR/inst/doc/Simulation.
 
 ## Citation
 
+## GWAS
+
+GWAS software also available from https://github.com/MRCIEU/varGWAS
