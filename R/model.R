@@ -39,14 +39,14 @@ model <- function(data, x, y, covar1=NULL, covar2=NULL){
         fit2 <- lm(d ~ ., data=X)
         X <- data %>% dplyr::select(!!covar2)
         fit_null <- lm(d ~ ., data=X)
-        p <- anova(fit_null, fit2) %>% broom::tidy(.) %>% dplyr::pull(p.value) %>% dplyr::nth(2)
-        f <- anova(fit_null, fit2) %>% broom::tidy(.) %>% dplyr::pull(statistic) %>% dplyr::nth(2)
+        p <- anova(fit_null, fit2)[["Pr(>F)"]][2]
+        f <- anova(fit_null, fit2)[["F"]][2]
     } else {
         X <- data %>% dplyr::select(!!x)
         fit2 <- lm(d ~ ., data=X)
         fit_null <- lm(d ~ 1, data=data)
-        p <- anova(fit_null, fit2) %>% broom::tidy(.) %>% dplyr::pull(p.value) %>% dplyr::nth(2)
-        f <- anova(fit_null, fit2) %>% broom::tidy(.) %>% dplyr::pull(statistic) %>% dplyr::nth(2)
+        p <- anova(fit_null, fit2)[["Pr(>F)"]][2]
+        f <- anova(fit_null, fit2)[["F"]][2]
     }
 
     # deltamethod
